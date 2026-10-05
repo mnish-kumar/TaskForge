@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const cors = require('cors');
 const authRoutes = require('./routes/auth.route');
+const errorHandler = require('./utils/errorHandler');
 
 const app = express();
 
@@ -39,5 +40,8 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Error handling middleware must be registered after all routes.
+app.use(errorHandler);
 
 module.exports = app;

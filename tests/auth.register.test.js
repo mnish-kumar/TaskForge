@@ -47,7 +47,7 @@ describe('POST /auth/api/register', () => {
             },
         });
 
-        const user = await User.findOne({ username: 'test-user' });
+        const user = await User.findOne({ username: 'test-user' }).select('+password');
         expect(user).not.toBeNull();
         expect(user.email).toBe('test@example.com');
         expect(user.password).not.toBe('password123');

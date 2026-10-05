@@ -1,40 +1,77 @@
-const userModel = require('../models/user.model');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const userModel = require("../models/user.model");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const asyncHandler = require("../utils/asynchandler");
+const AppError = require("../utils/appError");
 
+const register = asyncHandler(async (req, res) => {
+  const { username, email, password } = req.body;
 
+  if (!username || !email || !password) {
+    throw new AppError(
+        "Username, email, and password are required.", 400
+    );
+  }
 
-const register = async (req, res) => {
-    const { username, email, password } = req.body;
+  try {
+    
+    const existingUser = await userModel.findOne({ $or: [{username}, {email}] });
 
-    if (!username || !email || !password) {
-        return res.status(400).json({
-            success: false,
-            message: 'Username, email, and password are required.',
-        });
+    if (existingUser) {
+        throw new AppError('Username or email is already registered.', 409);
     }
 
-    try {
-       
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-     
-    } catch (error) {
-        console.error('User registration failed:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Unable to register user.',
-        });
+    const newUser = await userModel.create({
+        username,
+        email,
+        password: hashedPassword,
+    });
+
+    const accessToken = jwt.sign(
+        { id: newUser._id, username: newUser.username, email: newUser.email },
+        process.env.JWT_ACCESS_TOKEN_SECRET,
+        { expiresIn: "15m" }
+    );
+
+    const refreshToken = jwt.sign(
+        { id: newUser._id, username: newUser.username, email: newUser.email },
+        process.env.JWT_REFRESH_TOKEN_SECRET,
+        { expiresIn: "7d" }
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+
+    return res.status(201).json({
+      success: true,
+      user: {
+        id: newUser._id.toString(),
+        username: newUser.username,
+        email: newUser.email,
+      },
+    });
+
+  } catch (error) {
+    if (error.code === 11000) {
+        throw new AppError('Username or email is already registered.', 409);
     }
-};
+    throw error;
+  }
+});
 
-const login = async (req, res) => {
+const login = asyncHandler(async (req, res) => {});
 
-};
-
-const logout = async (req, res) => {
-
-};
+const logout = asyncHandler(async (req, res) => {});
 
 module.exports = {
-    register
+  register,
+  login,
+  logout
 };
