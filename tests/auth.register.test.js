@@ -8,7 +8,7 @@ const User = require('../src/models/user.model');
 
 let mongoServer;
 
-jest.setTimeout(3000);
+jest.setTimeout(1000);
 
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
