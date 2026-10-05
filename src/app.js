@@ -2,6 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const cors = require('cors');
+const authRoutes = require('./routes/auth.route');
 
 const app = express();
 
@@ -27,7 +28,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser());
-
+app.use('/auth/api', authRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
