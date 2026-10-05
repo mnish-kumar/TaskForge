@@ -36,6 +36,25 @@ const registerUserValidation = [
   responseWithValidationErrors,
 ];
 
+const validateLogin = [
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Invalid email format")
+    .normalizeEmail()
+    .isLength({ max: 254 })
+    .withMessage("Email is too long"),
+
+  body("password")
+    .isString()
+    .withMessage("Password must be a string")
+    .isLength({ min: 6, max: 100 })
+    .withMessage("Password must be between 6 and 100 characters"),
+
+  responseWithValidationErrors,
+];
+
 module.exports = {
   registerUserValidation,
+  validateLogin,
 };
