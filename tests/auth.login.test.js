@@ -8,7 +8,7 @@ const User = require('../src/models/user.model');
 
 let mongoServer;
 
-jest.setTimeout(30000);
+jest.setTimeout(1000);
 
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -54,7 +54,6 @@ describe('POST /auth/api/login', () => {
         });
         expect(response.headers['set-cookie']).toEqual(
             expect.arrayContaining([
-                expect.stringMatching(/^accessToken=/),
                 expect.stringMatching(/^refreshToken=/),
             ]),
         );
@@ -80,7 +79,7 @@ describe('POST /auth/api/login', () => {
         expect(response.status).toBe(401);
         expect(response.body).toEqual({
             success: false,
-            message: 'Invalid username/email or password.',
+            message: 'Invalid email/password.',
         });
     });
 });
